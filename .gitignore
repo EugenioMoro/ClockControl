@@ -1,3 +1,5 @@
 /target/
 /SystemConfig.properties
 /lib/
+/.project
+/.classpath
