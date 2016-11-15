@@ -14,4 +14,13 @@ public class SystemSettings {
 		return scf.weatherCity();
 	}
 	
+	public static String getMailUsername(){
+		return scf.mailUsername();
+	}
+	
+	public static char[] getMailPassword(){
+		return scf.mailPassword().toCharArray();
+	}
+	
+
 }

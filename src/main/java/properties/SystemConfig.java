@@ -11,4 +11,7 @@ public interface SystemConfig extends Config{
 	@DefaultValue("Lecce")
 	String weatherCity();
 
+	String mailUsername();
+	
+	String mailPassword();
 }
