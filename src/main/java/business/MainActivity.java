@@ -1,7 +1,5 @@
 package business;
 
-import model.Feed;
-import model.FeedMessage;
 import serialCommRXTX.FlowControl;
 import serialCommRXTX.SerialComm;
 
@@ -9,17 +7,17 @@ public class MainActivity {
 
 	public static void main(String[] args) throws Exception {
 
-		RSSFeedParser parser = new RSSFeedParser(
-				"http://www.ansa.it/sito/notizie/topnews/topnews_rss.xml");
-		Feed feed = parser.readFeed();
-		System.out.println(feed);
-		feed.getMessages().size();
-		String s="";
-		for (FeedMessage message : feed.getMessages()) {
-			s=s+"||||"+message.getTitle();		
-			}
-		
-		System.out.println(s);
+//		RSSFeedParser parser = new RSSFeedParser(
+//				"http://www.ansa.it/sito/ansait_rss.xml");
+//		Feed feed = parser.readFeed();
+//		System.out.println(feed);
+//		feed.getMessages().size();
+//		String s="";
+//		for (FeedMessage message : feed.getMessages()) {
+//			s=s+"----"+message.getTitle();		
+//			}
+//		
+//		System.out.println(s);
 
 		//testing serial comm
 		
@@ -33,8 +31,8 @@ public class MainActivity {
 		SerialComm.getInstance();
 		Thread.sleep(5000);
 		//FlowControl.getInstance().appendString("");
-		FlowControl.getInstance().appendString(s);
-
+		FlowControl.getInstance().appendString("ÿ");
+		
 
 		
 

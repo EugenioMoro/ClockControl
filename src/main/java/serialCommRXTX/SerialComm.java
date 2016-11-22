@@ -21,7 +21,7 @@ private OutputStream output;
 private SerialPort serialPort;
 
 private static final String PORT_NAMES[] = { 
-		"COM3"// Windows
+		"COM5"// Windows
 };
 private static final int TIME_OUT = 2000;
 private static final int DATA_RATE = 115200;

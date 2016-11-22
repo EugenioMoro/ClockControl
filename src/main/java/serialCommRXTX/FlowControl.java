@@ -52,10 +52,14 @@ public class FlowControl implements SerialPortEventListener{
 			lock.lock();
 			try {
 				BufferedReader input = new BufferedReader(new InputStreamReader(sp.getInputStream()));
-				if(input.readLine().equals("c")){
+				String line = input.readLine();
+				if(line.equals("c")){
 					//System.out.println("diomerda");
 					canTransfer=true;
 					write.signalAll();
+				}
+				if (line.equals("got")){
+					System.out.println("got");
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
