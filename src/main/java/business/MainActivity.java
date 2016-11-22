@@ -1,7 +1,10 @@
 package business;
 
-import serialCommRXTX.FlowControl;
-import serialCommRXTX.SerialComm;
+import com.sun.jmx.snmp.tasks.ThreadService;
+
+import arduinoComm.CommandSender;
+import arduinoComm.FlowControl;
+import arduinoComm.SerialComm;
 
 public class MainActivity {
 
@@ -31,7 +34,17 @@ public class MainActivity {
 		SerialComm.getInstance();
 		Thread.sleep(5000);
 		//FlowControl.getInstance().appendString("");
-		FlowControl.getInstance().appendString("ÿ");
+		//FlowControl.getInstance().appendString("colacchio sbollo");
+		//Thread.sleep(1000);
+		CommandSender.getInstance().setTimeAsNow();
+		CommandSender.getInstance().setBrightness(15);
+		CommandSender.getInstance().setBrightness(10);
+		CommandSender.getInstance().setBrightness(1);
+		
+		
+		Thread.sleep(10000);
+		SerialComm.getInstance().close();
+		System.exit(0);
 		
 
 		

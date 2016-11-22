@@ -322,7 +322,8 @@ void loop() {
 
 void processCommand(String command) {
   switch (command.charAt(0)) {
-    case 't': Serial.println("time"); setTimeFromString(command.substring(1)); break;
+    case 't': setTimeFromString(command.substring(1)); break;
+    case 'b': for(int i=0; i<4; i++) { lc.setIntensity(i, command.substring(1).toInt());} break;
     default: Serial.println("default");
   }
 }

@@ -1,4 +1,4 @@
-package serialCommRXTX;
+package arduinoComm;
 
 import java.io.BufferedReader;
 import java.io.IOException;
