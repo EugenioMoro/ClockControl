@@ -1,7 +1,7 @@
 #include <LedControl.h>
 #include <Time.h>
 
-
+//Eugenio Moro
 
 #define SCROLL_DELAY 10 //ms
 #define LED_INTENSITY 1 //1-15
