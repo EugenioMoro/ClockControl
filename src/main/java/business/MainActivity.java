@@ -1,26 +1,26 @@
 package business;
 
-import com.sun.jmx.snmp.tasks.ThreadService;
-
 import arduinoComm.CommandSender;
 import arduinoComm.FlowControl;
 import arduinoComm.SerialComm;
+import model.Feed;
+import model.FeedMessage;
 
 public class MainActivity {
 
 	public static void main(String[] args) throws Exception {
 
-//		RSSFeedParser parser = new RSSFeedParser(
-//				"http://www.ansa.it/sito/ansait_rss.xml");
-//		Feed feed = parser.readFeed();
-//		System.out.println(feed);
-//		feed.getMessages().size();
-//		String s="";
-//		for (FeedMessage message : feed.getMessages()) {
-//			s=s+"----"+message.getTitle();		
-//			}
-//		
-//		System.out.println(s);
+		RSSFeedParser parser = new RSSFeedParser(
+				"http://www.ansa.it/sito/ansait_rss.xml");
+		Feed feed = parser.readFeed();
+		System.out.println(feed);
+		feed.getMessages().size();
+		String s="";
+		for (FeedMessage message : feed.getMessages()) {
+			s=s+"----"+message.getTitle();		
+			}
+		
+		System.out.println(s);
 
 		//testing serial comm
 		
@@ -37,9 +37,9 @@ public class MainActivity {
 		//FlowControl.getInstance().appendString("colacchio sbollo");
 		//Thread.sleep(1000);
 		CommandSender.getInstance().setTimeAsNow();
-		CommandSender.getInstance().setBrightness(15);
-		CommandSender.getInstance().setBrightness(10);
-		CommandSender.getInstance().setBrightness(1);
+		FlowControl.getInstance().appendString("~n");
+		Thread.sleep(1000);
+		FlowControl.getInstance().appendString(s);
 		
 		
 		Thread.sleep(10000);

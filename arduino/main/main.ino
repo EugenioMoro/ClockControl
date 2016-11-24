@@ -6,7 +6,7 @@
 #define SCROLL_DELAY 10 //ms
 #define LED_INTENSITY 1 //1-15
 
-const unsigned char CH[] = {
+PROGMEM const unsigned char CH[] = {
   B00000000, B00000000, B00000000, B00000000, B00000000, // space
   B01011111, B00000000, B00000000, B00000000, B00000000, // !
   B00000011, B00000000, B00000011, B00000000, B00000000, // "
@@ -104,7 +104,15 @@ const unsigned char CH[] = {
   B00001000, B00000100, B00001000, B00000100, B00000000, // ~
 };
 
-
+byte newspaper[8] = {B11111110,
+                     B10000010,
+                     B10111010,
+                     B10000010,
+                     B10111010,
+                     B10000010,
+                     B10111010,
+                     B10000010
+                    };
 
 byte clessidra[8] = {B11111000,
                      B10001000,
@@ -115,6 +123,17 @@ byte clessidra[8] = {B11111000,
                      B10101000,
                      B11111000
                     };
+
+byte envelope[8] = {B00000000,
+                    B11111110,
+                    B11000110,
+                    B11101110,
+                    B10111010,
+                    B10010010,
+                    B10000010,
+                    B11111110
+                   };
+                 
 
 byte one[8] = {B00100000,
                B01100000,
@@ -246,6 +265,23 @@ int shiftsCount = 0;
 int recivedCount = 0;
 boolean isCommand = false;
 String command;
+int shiftFrom = 0;
+
+
+//variables for fixed sprite while scrolling:
+int totalShiftsCount = 0;
+int isFixedSprite = false;
+int shiftStart = 0;
+boolean animation = false;
+boolean isNewspaper = false;
+boolean isEnvelope = false;
+enum ANIMATION_TYPE {
+  NEWSPAPER,
+  ENVELOPE
+};
+ANIMATION_TYPE animation_type;
+int animationStage = 0;
+int animationSpeed = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -264,7 +300,27 @@ void setup() {
 
 void loop() {
   while (Serial.available() > 0) {
+    if (animation && (totalShiftsCount % animationSpeed) == 0) { //this is to animate sprite every 10 shifts
+      animateFixedSprite();
+    }
     char c = Serial.read();
+    if (isNewspaper) {
+      animationSpeed=10;
+      shiftsCount = 0;
+      status2Buf();
+      printAndShiftNewspaper();
+      totalShiftsCount = 8;
+      isNewspaper = false;
+    }
+    if (isEnvelope){
+      animationStage=0;
+      animationSpeed=3;
+      shiftsCount = 0;
+      status2Buf();
+      printAndShiftEnvelope();
+      totalShiftsCount = 8;
+      isEnvelope = false;
+    }
     if (isCommand) {
       command.concat(c);
       continue;
@@ -278,9 +334,14 @@ void loop() {
     status2Buf();
 
     c = c - 32;
-    memcpy(colBuffer + 35, CH + 5 * c, 5);
+    memcpy_P(colBuffer + 35, CH + 5 * c, 5);
     for (int i = 0; i < 6; i++) {
-      shiftDraw();
+      shiftDrawFrom(shiftStart);
+      totalShiftsCount++;
+      if (totalShiftsCount > 31 && isFixedSprite) { //31 works, don't ask why, this is where the sprite is in place
+        shiftStart = 8;
+        animation = true;
+      }
     }
     showClock = false;
     recivedCount++;
@@ -289,7 +350,8 @@ void loop() {
       Serial.println("c");
       recivedCount = 0;
     }
-  }
+  } //end of serial code
+
   if (isCommand) {
     isCommand = false;
     processCommand(command);
@@ -297,12 +359,25 @@ void loop() {
   recivedCount = 0;
   if (!showClock && shiftsCount < 20) {
     if (shiftsCount == 19) { //end of scrolling text
-      //here print clock at the end of buffer and scroll 32 times
+      //here print clock at the end of buffer and scroll 32 times, reset all that needs to be reset
+      if (isFixedSprite) { //small detail, it makes the fixed sprite to shift out
+        clearBufferByDevice(0);
+        draw8x8OnBuffer(newspaper, 0);
+      }
       drawClockOnBuffer();
+
       for (int i = 0; i < 32; i++) {
         shiftDrawCompleteBuffer();
       }
-    } else shiftDraw();
+      // RESET LOGIC HERE!!!!
+      animation = false;
+      isFixedSprite = false;
+      totalShiftsCount = 0;
+      shiftStart = 0;
+    } else shiftDrawFrom(shiftStart);
+    if (animation && (shiftsCount % animationSpeed) == (animationSpeed-1)) { //this is to animate sprite every 10 shifts
+      animateFixedSprite();
+    }
     shiftsCount++;
     return;
   }
@@ -310,7 +385,7 @@ void loop() {
   moveSand();
   blinkWeekDays();
   sandIsUp = !sandIsUp;
-  delay(999);
+  delay(499);
 
   if (seconds > second()) {
     seconds = 0;
@@ -323,8 +398,63 @@ void loop() {
 void processCommand(String command) {
   switch (command.charAt(0)) {
     case 't': setTimeFromString(command.substring(1)); break;
-    case 'b': for(int i=0; i<4; i++) { lc.setIntensity(i, command.substring(1).toInt());} break;
+    case 'b': for (int i = 0; i < 4; i++) {
+        lc.setIntensity(i, command.substring(1).toInt());
+      } break;
+    case 'n': isNewspaper = true; isFixedSprite = true; animation = true; animation_type = NEWSPAPER; break;
+    case 'm': isEnvelope = true; isFixedSprite = true; animation = true; animation_type = ENVELOPE; break;
     default: Serial.println("default");
+  }
+}
+
+void printAndShiftNewspaper() {
+  draw8x8OnBuffer(newspaper, 4);
+  for (int i = 0; i < 8; i++) {
+    shiftDraw();
+  }
+}
+
+void printAndShiftEnvelope() {
+  draw8x8OnBuffer(envelope, 4);
+  for (int i = 0; i < 8; i++) {
+    shiftDraw();
+  }
+}
+
+void envelopeAnimation() {
+  Serial.println("animaTOn");
+  switch (animationStage-1) {
+    case 0: drawColumn(3, B10101010); Serial.println("zero"); return;
+    case 1: drawColumn(2, B10010110);Serial.println("one"); drawColumn(3, B10010110); drawColumn(4, B10010110); return;
+    case 2: drawColumn(1, B10001010);Serial.println("two"); drawColumn(2, B10010010); drawColumn(3, B10100010); drawColumn(4, B10010010); drawColumn(5, B10001010); return;
+    case 3: drawColumn(3, B10100011);Serial.println("three"); return;
+    case 4: drawColumn(2, B10010011); Serial.println("four");drawColumn(4, B10100011); return;
+    case 5: draw8x8(envelope, 0); Serial.println("five");return;
+  }
+  animationStage++;
+}
+
+void scrollNewspaperAnimation() {
+  Serial.println("news");
+  if (sandIsUp) {
+    drawColumn(2, B01010101);
+    drawColumn(3, B01010101);
+    drawColumn(4, B01010101);
+    sandIsUp = false;
+    return;
+  }
+  drawColumn(2, B10101001);
+  drawColumn(3, B10101001);
+  drawColumn(4, B10101001);
+  sandIsUp = true;
+}
+
+void animateFixedSprite() {
+  if (animation) {
+    switch (animation_type) {
+      case NEWSPAPER: scrollNewspaperAnimation(); return;
+      //case ENVELOPE: envelopeAnimation(); return; //this animation doesn't work, it seems it's a bug not related to my code
+    }
   }
 }
 
@@ -360,13 +490,14 @@ void flushBuffer() {
   }
 }
 
-void drawBuffer() {
-  for (int i = 0; i < 32; i++) {
+void drawBuffer(int start) {
+  int i;
+  for (i = start; i < 32; i++) {
     drawColumn(i, colBuffer[i]);
   }
 }
 
-void drawBuffer32() {
+void drawBufferLast32Byte() {
   for (int i = 32; i < 64; i++) {
     drawColumn(i - 32, colBuffer[i]);
   }
@@ -377,9 +508,19 @@ void shiftDraw() {
     colBuffer[i] = colBuffer[i + 1];
   }
   colBuffer[39] = B00000000;
-  drawBuffer();
+  drawBuffer(0);
   delay(SCROLL_DELAY);
 }
+
+void shiftDrawFrom(int start) {
+  for (int i = 0; i < 39; i++) {
+    colBuffer[i] = colBuffer[i + 1];
+  }
+  colBuffer[39] = B00000000;
+  drawBuffer(start);
+  delay(SCROLL_DELAY);
+}
+
 
 void shiftCompleteBuffer(int shift) {
   for (int i = 0; i < 63 - shift; i++) {
@@ -388,7 +529,7 @@ void shiftCompleteBuffer(int shift) {
   for (int i = 0; i < shift; i++) {
     colBuffer[63 - i];
   }
-  drawBuffer();
+  drawBuffer(0);
 }
 
 void shiftDrawCompleteBuffer() {
@@ -396,7 +537,7 @@ void shiftDrawCompleteBuffer() {
     colBuffer[i] = colBuffer[i + 1];
   }
   colBuffer[63] = B00000000;
-  drawBuffer();
+  drawBuffer(0);
   delay(SCROLL_DELAY);
 }
 
@@ -826,6 +967,12 @@ void forceDrawThirdDigit() {
     case 3: bitWrite(colBuffer[55], 0, 1); bitWrite(colBuffer[55], 2, 1); bitWrite(colBuffer[54], 5, 1); bitWrite(colBuffer[53], 5, 1); bitWrite(colBuffer[52], 5, 1); bitWrite(colBuffer[54], 2, 1); return;
     case 4: colBuffer[55] = B00111111; bitWrite(colBuffer[54], 3, 1); bitWrite(colBuffer[53], 3, 1); bitWrite(colBuffer[52], 3, 1); return;
     case 5: bitWrite(colBuffer[55], 0, 1); bitWrite(colBuffer[55], 2, 1); bitWrite(colBuffer[54], 2, 1); bitWrite(colBuffer[54], 5, 1); bitWrite(colBuffer[53], 2, 1); bitWrite(colBuffer[53], 5, 1); bitWrite(colBuffer[52], 5, 1); return;
+  }
+}
+
+void clearBufferByDevice(int device) {
+  for (int i = (8 * device); i < (8 * device + 8); i++) {
+    colBuffer[i] = B00000000;
   }
 }
 
