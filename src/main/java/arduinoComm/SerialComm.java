@@ -20,9 +20,6 @@ private OutputStream output;
 
 private SerialPort serialPort;
 
-private static final String PORT_NAMES[] = { 
-		"COM5"// Windows
-};
 private static final int TIME_OUT = 2000;
 private static final int DATA_RATE = 115200;
 
@@ -38,16 +35,15 @@ public void initialize() {
 	CommPortIdentifier portId = null;
 	@SuppressWarnings("rawtypes")
 	Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
+	PortPicker pp = new PortPicker();
 
 	//First, Find an instance of serial port as set in PORT_NAMES.
 	while (portEnum.hasMoreElements()) {
 		CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
-		for (String portName : PORT_NAMES) {
-			if (currPortId.getName().equals(portName)) {
+			if (pp.isValid(currPortId)) {
 				portId = currPortId;
 				break;
 			}
-		}
 	}
 	if (portId == null) {
 		System.out.println("Could not find COM port.");
@@ -104,20 +100,7 @@ public synchronized void serialEvent(SerialPortEvent oEvent) {
 	// Ignore all the other eventTypes, but you should consider the other ones.
 }
 
-//public static void main(String[] args) throws Exception {
-//	SerialTest main = new SerialTest();
-//	main.initialize();
-//	Thread t=new Thread() {
-//		public void run() {
-//			//the following line will keep this app alive for 1000 seconds,
-//			//waiting for events to occur and responding to them (printing incoming messages to console).
-//			try {Thread.sleep(1000000);} catch (InterruptedException ie) {}
-//		}
-//	};
-//	t.start();
-//	System.out.println("Started");
-//	writer("prova");
-//}
+
 
 public synchronized void writeString(String s){
 	try {
@@ -137,8 +120,6 @@ public synchronized void writeBytes(byte[] b){
 	}
 }
 
-
-	
 	public synchronized void writeByte(byte[] b, int position){
 		try {
 			output.write(b, position, 1);
@@ -147,6 +128,7 @@ public synchronized void writeBytes(byte[] b){
 			e.printStackTrace();
 		}
 	}
+	
 }
 
 

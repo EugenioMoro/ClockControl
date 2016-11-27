@@ -27,6 +27,9 @@ public class FlowControl implements SerialPortEventListener{
 	private Boolean canTransfer=true;
 	private Boolean tooLong=false;
 	private int tooLongCount=0;
+	
+
+	
 	private Thread worker = new Thread(new Runnable() {
 		
 		@Override
@@ -53,16 +56,18 @@ public class FlowControl implements SerialPortEventListener{
 			try {
 				BufferedReader input = new BufferedReader(new InputStreamReader(sp.getInputStream()));
 				String line = input.readLine();
+				System.out.println("Recived: " + line);
 				if(line.equals("c")){
-					//System.out.println("diomerda");
 					canTransfer=true;
 					write.signalAll();
 				}
 				if (line.equals("got")){
 					System.out.println("got");
 				}
+				if (line.equals("diocan")){
+					System.out.println("ping");
+				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} finally {lock.unlock();}
 			
@@ -129,5 +134,8 @@ public class FlowControl implements SerialPortEventListener{
 		SerialComm.getInstance().writeString(s);
 	}
 	
-
+	public synchronized Thread getWorker(){
+		return worker;
+	}
 }
+	

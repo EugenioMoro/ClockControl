@@ -296,6 +296,7 @@ void setup() {
   setTime(21, 40, 00, 19, 11, 2016);
   drawClock();
   flushBuffer();
+
 }
 
 void loop() {
@@ -403,6 +404,7 @@ void processCommand(String command) {
       } break;
     case 'n': isNewspaper = true; isFixedSprite = true; animation = true; animation_type = NEWSPAPER; break;
     case 'm': isEnvelope = true; isFixedSprite = true; animation = true; animation_type = ENVELOPE; break;
+    case 'p': Serial.println("p"); break;
     default: Serial.println("default");
   }
 }
@@ -435,7 +437,6 @@ void envelopeAnimation() {
 }
 
 void scrollNewspaperAnimation() {
-  Serial.println("news");
   if (sandIsUp) {
     drawColumn(2, B01010101);
     drawColumn(3, B01010101);

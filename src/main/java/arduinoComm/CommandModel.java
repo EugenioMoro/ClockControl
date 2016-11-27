@@ -9,8 +9,9 @@ package arduinoComm;
  */
 public class CommandModel implements Runnable {
 	
-	public static final String SET_TIME="~t";
-	public static final String SET_BRIGHTNESS="~b";
+	public static final String SET_TIME="t";
+	public static final String SET_BRIGHTNESS="b";
+	public static final String ANNOUNCE_NEWS="n";
 	
 	private String command;
 	private String data="";
@@ -19,7 +20,7 @@ public class CommandModel implements Runnable {
 	
 	
 	public CommandModel(String command, String data) {
-		this.command = command;
+		this.command = "~"+command;
 		this.data = data;
 	}
 
@@ -35,6 +36,12 @@ public class CommandModel implements Runnable {
 			e.printStackTrace();
 		}
 		FlowControl.getInstance().appendString(command+data);
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 

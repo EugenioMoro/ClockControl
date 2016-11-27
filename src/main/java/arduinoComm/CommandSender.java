@@ -63,6 +63,10 @@ public class CommandSender {
 		}
 	}
 	
+	public void announceNews(){
+		appendCommand(new CommandModel(CommandModel.ANNOUNCE_NEWS, ""));
+	}
+	
 	private void appendCommand(CommandModel command){
 		lock.lock();
 		try{
