@@ -35,7 +35,7 @@ public class CommandModel implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		FlowControl.getInstance().appendString(command+data);
+		HighLevelComm.getInstance().appendString(command+data);
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {

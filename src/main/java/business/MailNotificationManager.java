@@ -15,8 +15,6 @@ import com.googlecode.gmail4j.GmailMessage;
 import com.googlecode.gmail4j.http.HttpGmailConnection;
 import com.googlecode.gmail4j.rss.RssGmailClient;
 
-import properties.SystemSettings;
-
 /**
  * @author Eugenio
  *
@@ -50,8 +48,8 @@ public class MailNotificationManager {
 	}
 	
 	private List<GmailMessage> fetchUnreadMessages(){
-		String username=SystemSettings.getMailUsername();
-		char pwd[] = SystemSettings.getMailPassword();
+		String username=null;//=SystemSettings.getMailUsername();
+		char pwd[]=null;// = SystemSettings.getMailPassword();
 		
 		GmailClient client = new RssGmailClient();
 		GmailConnection connection = new HttpGmailConnection(username, pwd);

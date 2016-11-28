@@ -32,10 +32,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/moroe_000/git/ClockControl/lib/openweathermap/java-api/api-core/1.0/api-core-1.0.jar" sourcepath="C:/Users/Eugenio/.m2/repository/org/openweathermap/java-api/api-core/1.0/api-core-1.0-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/Users/Eugenio/.m2/repository/org/openweathermap/java-api/api-core/1.0/javadoc/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/moroe/.m2/repository/org/openweathermap/java-api/api-core/1.0/api-core-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/RXTXcomm.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

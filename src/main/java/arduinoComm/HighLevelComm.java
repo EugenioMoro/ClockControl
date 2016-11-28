@@ -11,14 +11,15 @@ import java.util.concurrent.locks.ReentrantLock;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
+import model.Command;
 
 /*
  * This class acts as flow control for sending strings with length>63
  */
 
-public class FlowControl implements SerialPortEventListener{
+public class HighLevelComm implements SerialPortEventListener{
 	
-	private static FlowControl instance;
+	private static HighLevelComm instance;
 	private Boolean isWorking=false;
 	private Vector<String> stringVector = new Vector<String>();
 	private Lock lock = new ReentrantLock();
@@ -41,9 +42,9 @@ public class FlowControl implements SerialPortEventListener{
 	});
 	
 
-	public static FlowControl getInstance(){
+	public static HighLevelComm getInstance(){
 		if(instance==null){
-			instance=new FlowControl();
+			instance=new HighLevelComm();
 		}
 		return instance;
 	}
@@ -132,6 +133,22 @@ public class FlowControl implements SerialPortEventListener{
 	private void sendString(String s){
 		System.out.println("Sending: "+s);
 		SerialComm.getInstance().writeString(s);
+	}
+	
+	public void appendCommand(Command command){
+		appendString(command.toString());
+	}
+	
+	public Boolean appendStringControlled(String s){
+		if(!stringVector.isEmpty()){
+			return false;
+		}
+		appendString(s);
+		return true;
+	}
+	
+	public Boolean isBusy(){
+		return !stringVector.isEmpty();
 	}
 	
 	public synchronized Thread getWorker(){

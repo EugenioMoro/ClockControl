@@ -67,7 +67,7 @@ public void initialize() {
 
 		// add event listeners
 		//serialPort.addEventListener(this);
-		serialPort.addEventListener(FlowControl.getInstance());
+		serialPort.addEventListener(HighLevelComm.getInstance());
 		serialPort.notifyOnDataAvailable(true);
 	} catch (Exception e) {
 		System.err.println(e.toString());
@@ -102,7 +102,7 @@ public synchronized void serialEvent(SerialPortEvent oEvent) {
 
 
 
-public synchronized void writeString(String s){
+ synchronized void writeString(String s){
 	try {
 		output.write(s.getBytes("ASCII"));
 	} catch (Exception e) {
@@ -111,7 +111,7 @@ public synchronized void writeString(String s){
 	}
 }
 
-public synchronized void writeBytes(byte[] b){
+ synchronized void writeBytes(byte[] b){
 	try {
 		output.write(b);
 	} catch (IOException e) {
@@ -120,7 +120,7 @@ public synchronized void writeBytes(byte[] b){
 	}
 }
 
-	public synchronized void writeByte(byte[] b, int position){
+ synchronized void writeByte(byte[] b, int position){
 		try {
 			output.write(b, position, 1);
 		} catch (IOException e) {

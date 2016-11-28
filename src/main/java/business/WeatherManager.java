@@ -12,7 +12,7 @@ import org.openweathermap.api.query.UnitFormat;
 import org.openweathermap.api.query.currentweather.CurrentWeatherOneLocationQuery;
 
 import model.Weather;
-import properties.SystemSettings;
+import properties.PropertiesManager;
 
 public class WeatherManager {
 	
@@ -29,14 +29,14 @@ public class WeatherManager {
 	}
 	
 	public WeatherManager(){
-		client = new UrlConnectionWeatherClient(SystemSettings.getWeatherApiKey());
+		client = new UrlConnectionWeatherClient(PropertiesManager.getInstance().getWeatherApiKey());
 	}
 	
 	private void updateWeatherData(){
 		CurrentWeatherOneLocationQuery currentWeatherOneLocationQuery = QueryBuilderPicker.pick()
                 .currentWeather()                   // get current weather
                 .oneLocation()                      // for one location
-                .byCityName(SystemSettings.getWeatherCity())              // for Kharkiv city
+                .byCityName(PropertiesManager.getInstance().getWeatherCity())              // for Kharkiv city
                 .countryCode("IT")                  // in Ukraine
                 .type(Type.ACCURATE)                // with Accurate search
                 .language(Language.ITALIAN)         // in English language
