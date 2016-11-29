@@ -3,6 +3,8 @@ package business;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 
+import com.restfb.types.User;
+
 import arduinoComm.HighLevelComm;
 import arduinoComm.SerialComm;
 import bot.UpdateHandler;
@@ -11,24 +13,6 @@ public class MainActivity {
 
 	public static void main(String[] args) throws Exception {
 
-//		RSSFeedParser parser = new RSSFeedParser(
-//				"http://www.ansa.it/sito/ansait_rss.xml");
-//		Feed feed = parser.readFeed();
-//		System.out.println(feed);
-//		feed.getMessages().size();
-//		String s="";
-//		for (FeedMessage message : feed.getMessages()) {
-//			s=s+"----"+message.getTitle();		
-//			}
-//		SerialComm.getInstance();
-//		Thread.sleep(2000);
-//		
-//		HighLevelComm.getInstance().appendString("~b10");
-//		Thread.sleep(500);
-//		HighLevelComm.getInstance().appendString("~n");
-//		Thread.sleep(500);
-//
-//		HighLevelComm.getInstance().appendString(s);
 		SerialComm.getInstance();
 		Thread.sleep(2000);
 		HighLevelComm.getInstance().appendString("~b"+1);
@@ -36,6 +20,9 @@ public class MainActivity {
 		ApiContextInitializer.init(); 
 		TelegramBotsApi botApi = new TelegramBotsApi();
 		botApi.registerBot(UpdateHandler.getInstance());
+		
+		User u= new User();
+	
 		
 }
 }

@@ -11,10 +11,11 @@ import org.openweathermap.api.query.Type;
 import org.openweathermap.api.query.UnitFormat;
 import org.openweathermap.api.query.currentweather.CurrentWeatherOneLocationQuery;
 
+import arduinoComm.HighLevelComm;
 import model.Weather;
 import properties.PropertiesManager;
 
-public class WeatherManager {
+public class WeatherManager extends ScheduledTaskPrototype{
 	
 	private static WeatherManager instance;
 	
@@ -28,8 +29,11 @@ public class WeatherManager {
 		return instance;
 	}
 	
-	public WeatherManager(){
+	private WeatherManager(){
 		client = new UrlConnectionWeatherClient(PropertiesManager.getInstance().getWeatherApiKey());
+		super.setDelayInterval(300);
+		super.setInitialDelay(2);
+		super.setCommand(getRunnableTask());
 	}
 	
 	private void updateWeatherData(){
@@ -58,6 +62,37 @@ public class WeatherManager {
 		w.setWheaterDescription(currentWeather.getWeather().get(0).getDescription());
 		
 		return w;
+	}
+	
+	public void printWeather(){
+		Weather w = getWeather();
+		String s = "A "
+				+PropertiesManager.getInstance().getWeatherCity()
+				+" ci sono "
+				+w.getTemperature()
+				+" gradi"
+				+" ed il tempo è: "
+				+w.getWheaterDescription();
+		HighLevelComm.getInstance().appendString(s);
+		
+	}
+	
+	private Runnable getRunnableTask(){
+return new Runnable() {
+			
+			@Override
+			public void run() {
+				while(HighLevelComm.getInstance().isBusy()){
+					try {
+						Thread.sleep(30000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				printWeather();
+			}
+		};
 	}
 	
 	

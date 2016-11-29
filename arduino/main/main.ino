@@ -1,3 +1,6 @@
+#include <Time.h>
+#include <TimeLib.h>
+
 #include <LedControl.h>
 #include <Time.h>
 
@@ -133,7 +136,7 @@ byte envelope[8] = {B00000000,
                     B10000010,
                     B11111110
                    };
-                 
+
 
 byte one[8] = {B00100000,
                B01100000,
@@ -244,6 +247,16 @@ byte wipe[8] = {B00000000,
                 B00000000
                };
 
+byte faceLogo[8] = {B11111111,
+                    B11110111,
+                    B10000011,
+                    B11110101,
+                    B11110101,
+                    B11111111,
+                    B11111111,
+                    B00000000
+                   };
+
 
 LedControl lc = LedControl(11, 13, 10, 4);
 //---------------------data-clk-cs-devices°
@@ -275,6 +288,7 @@ int shiftStart = 0;
 boolean animation = false;
 boolean isNewspaper = false;
 boolean isEnvelope = false;
+boolean isFacebook = false;
 enum ANIMATION_TYPE {
   NEWSPAPER,
   ENVELOPE
@@ -306,16 +320,22 @@ void loop() {
     }
     char c = Serial.read();
     if (isNewspaper) {
-      animationSpeed=10;
+      animationSpeed = 10;
       shiftsCount = 0;
       status2Buf();
       printAndShiftNewspaper();
       totalShiftsCount = 8;
       isNewspaper = false;
     }
-    if (isEnvelope){
-      animationStage=0;
-      animationSpeed=3;
+    if(isFacebook){
+      status2Buf();
+      printAndShiftFacebook();
+      totalShiftsCount=8;
+      isFacebook=false;
+    }
+    if (isEnvelope) {
+      animationStage = 0;
+      animationSpeed = 3;
       shiftsCount = 0;
       status2Buf();
       printAndShiftEnvelope();
@@ -376,7 +396,7 @@ void loop() {
       totalShiftsCount = 0;
       shiftStart = 0;
     } else shiftDrawFrom(shiftStart);
-    if (animation && (shiftsCount % animationSpeed) == (animationSpeed-1)) { //this is to animate sprite every 10 shifts
+    if (animation && (shiftsCount % animationSpeed) == (animationSpeed - 1)) { //this is to animate sprite every 10 shifts
       animateFixedSprite();
     }
     shiftsCount++;
@@ -405,6 +425,7 @@ void processCommand(String command) {
     case 'n': isNewspaper = true; isFixedSprite = true; animation = true; animation_type = NEWSPAPER; break;
     case 'm': isEnvelope = true; isFixedSprite = true; animation = true; animation_type = ENVELOPE; break;
     case 'p': Serial.println("p"); break;
+    case 'f': isFacebook = true; isFixedSprite = true; break;
     default: Serial.println("default");
   }
 }
@@ -423,15 +444,22 @@ void printAndShiftEnvelope() {
   }
 }
 
+void printAndShiftFacebook() {
+  draw8x8OnBuffer(faceLogo, 4);
+  for (int i = 0; i < 8; i++) {
+    shiftDraw();
+  }
+}
+
 void envelopeAnimation() {
   Serial.println("animaTOn");
-  switch (animationStage-1) {
+  switch (animationStage - 1) {
     case 0: drawColumn(3, B10101010); Serial.println("zero"); return;
-    case 1: drawColumn(2, B10010110);Serial.println("one"); drawColumn(3, B10010110); drawColumn(4, B10010110); return;
-    case 2: drawColumn(1, B10001010);Serial.println("two"); drawColumn(2, B10010010); drawColumn(3, B10100010); drawColumn(4, B10010010); drawColumn(5, B10001010); return;
-    case 3: drawColumn(3, B10100011);Serial.println("three"); return;
-    case 4: drawColumn(2, B10010011); Serial.println("four");drawColumn(4, B10100011); return;
-    case 5: draw8x8(envelope, 0); Serial.println("five");return;
+    case 1: drawColumn(2, B10010110); Serial.println("one"); drawColumn(3, B10010110); drawColumn(4, B10010110); return;
+    case 2: drawColumn(1, B10001010); Serial.println("two"); drawColumn(2, B10010010); drawColumn(3, B10100010); drawColumn(4, B10010010); drawColumn(5, B10001010); return;
+    case 3: drawColumn(3, B10100011); Serial.println("three"); return;
+    case 4: drawColumn(2, B10010011); Serial.println("four"); drawColumn(4, B10100011); return;
+    case 5: draw8x8(envelope, 0); Serial.println("five"); return;
   }
   animationStage++;
 }
@@ -454,7 +482,7 @@ void animateFixedSprite() {
   if (animation) {
     switch (animation_type) {
       case NEWSPAPER: scrollNewspaperAnimation(); return;
-      //case ENVELOPE: envelopeAnimation(); return; //this animation doesn't work, it seems it's a bug not related to my code
+        //case ENVELOPE: envelopeAnimation(); return; //this animation doesn't work, it seems it's a bug not related to my code
     }
   }
 }

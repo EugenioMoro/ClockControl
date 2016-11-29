@@ -2,6 +2,7 @@ package properties;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -40,10 +41,12 @@ public class PropertiesManager {
 		}
 		try { //load
 			properties.load(in);
+			in.close();
 		} catch (IOException e) {
 			Logger.ExceptionRaised(e);
 			return;
 		}
+		
 	}
 	
 	public String getWeatherApiKey(){
@@ -56,6 +59,35 @@ public class PropertiesManager {
 	
 	public String getBotToken(){
 		return properties.getProperty("botToken");
+	}
+	
+	public String getFacebookAppId(){
+		return properties.getProperty("facebookAppId");
+	}
+	
+	public String getFacebookAccessToken(){
+		return properties.getProperty("facebookAccessToken");
+	}
+	
+	public void setFacebookAccessToken(String accessToken){
+		properties.setProperty("facebookAccessToken", accessToken);
+		saveReload();
+	}
+	
+	private void saveReload(){
+		FileOutputStream fo=null;
+		try {
+			fo = new FileOutputStream(FILE_NAME);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			properties.store(fo, "");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		load();
 	}
 	
 

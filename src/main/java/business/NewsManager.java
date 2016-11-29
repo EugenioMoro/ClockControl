@@ -5,7 +5,7 @@ import arduinoComm.HighLevelComm;
 import model.Feed;
 import model.FeedMessage;
 
-public class NewsManager {
+public class NewsManager extends ScheduledTaskPrototype{
 	
 	private static NewsManager instance;
 	
@@ -14,7 +14,9 @@ public class NewsManager {
 	private String feedUrl="http://www.ansa.it/sito/ansait_rss.xml";
 	
 	private NewsManager() {
-		
+		super.setInitialDelay(1);
+		super.setDelayInterval(30);
+		super.setCommand(getRunnableTask());
 	}
 	
 	public static NewsManager getInstance(){
@@ -44,6 +46,24 @@ public class NewsManager {
 			e.printStackTrace();
 		}
 		HighLevelComm.getInstance().appendString(s);
+	}
+	
+	private Runnable getRunnableTask(){
+		return new Runnable() {
+			
+			@Override
+			public void run() {
+				while(HighLevelComm.getInstance().isBusy()){
+					try {
+						Thread.sleep(30000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				printNews();
+			}
+		};
 	}
 
 }

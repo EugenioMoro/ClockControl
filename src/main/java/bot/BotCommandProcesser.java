@@ -5,6 +5,7 @@ import org.telegram.telegrambots.api.objects.Update;
 import arduinoComm.Commands;
 import arduinoComm.HighLevelComm;
 import botContext.BrightnessContext;
+import botContext.FacebookContext;
 import business.NewsManager;
 import model.BotUser;
 
@@ -14,6 +15,7 @@ public class BotCommandProcesser {
 	private static final String BRIGHTNESS="/brightness";
 	private static final String TIME="/settime";
 	private static final String NEWS="/getNews";
+	private static final String FACEBOOK="/facebook";
 	
 	public static void process(Update update, BotUser user){
 		switch(update.getMessage().getText()){
@@ -32,6 +34,10 @@ public class BotCommandProcesser {
 		}
 		case NEWS:{
 			sendNews(update);
+			break;
+		}
+		case FACEBOOK:{
+			facebook(update);
 			break;
 		}
 		}
@@ -79,6 +85,15 @@ public class BotCommandProcesser {
 	
 	private static void clockBusyMessageSend(Update update){
 		MessageSender.simpleSend("Clessidra is busy right now, try later", update);
+	}
+	
+	private static void facebook(Update update){
+		if(HighLevelComm.getInstance().isBusy()){
+			clockBusyMessageSend(update);
+			return;
+		}
+		UpdateHandler.getUserByUpdate(update).setCurrentContext(new FacebookContext(UpdateHandler.getUserByUpdate(update)));
+		UpdateHandler.getUserByUpdate(update).setCanReply(false);
 	}
 	
 }
