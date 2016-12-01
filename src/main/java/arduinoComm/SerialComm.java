@@ -5,7 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import com.sun.corba.se.impl.orbutil.closure.Future;
+
+import business.Logger;
+import exceptions.SerialNotConnectedException;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
@@ -19,6 +27,9 @@ private BufferedReader input;
 private OutputStream output;
 
 private SerialPort serialPort;
+private Boolean isConnected=false;
+private Thread connectionWorker;
+
 
 private static final int TIME_OUT = 2000;
 private static final int DATA_RATE = 115200;
@@ -32,6 +43,11 @@ public static SerialComm getInstance(){
 }
 
 public void initialize() {
+	connectionWorker=new Thread(getConnectionTask());
+	connectionWorker.start();
+}
+
+private void connect(){
 	CommPortIdentifier portId = null;
 	@SuppressWarnings("rawtypes")
 	Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
@@ -46,7 +62,7 @@ public void initialize() {
 			}
 	}
 	if (portId == null) {
-		System.out.println("Could not find COM port.");
+		Logger.notifyClessidraNotFound();
 		return;
 	}
 
@@ -69,19 +85,23 @@ public void initialize() {
 		//serialPort.addEventListener(this);
 		serialPort.addEventListener(HighLevelComm.getInstance());
 		serialPort.notifyOnDataAvailable(true);
+		isConnected=true;
 	} catch (Exception e) {
 		System.err.println(e.toString());
 	}
 }
+
 
 /**
  * This should be called when you stop using the port.
  * This will prevent port locking on platforms like Linux.
  */
 public synchronized void close() {
+	System.out.println("closing connection");
 	if (serialPort != null) {
 		serialPort.removeEventListener();
 		serialPort.close();
+		isConnected=false;
 	}
 }
 
@@ -102,7 +122,10 @@ public synchronized void serialEvent(SerialPortEvent oEvent) {
 
 
 
- synchronized void writeString(String s){
+ synchronized void writeString(String s) throws SerialNotConnectedException{
+	if(!isConnected){
+		throw new SerialNotConnectedException();
+	}
 	try {
 		output.write(s.getBytes("ASCII"));
 	} catch (Exception e) {
@@ -111,7 +134,10 @@ public synchronized void serialEvent(SerialPortEvent oEvent) {
 	}
 }
 
- synchronized void writeBytes(byte[] b){
+ synchronized void writeBytes(byte[] b) throws SerialNotConnectedException{
+		if(!isConnected){
+			throw new SerialNotConnectedException();
+		}
 	try {
 		output.write(b);
 	} catch (IOException e) {
@@ -120,7 +146,10 @@ public synchronized void serialEvent(SerialPortEvent oEvent) {
 	}
 }
 
- synchronized void writeByte(byte[] b, int position){
+ synchronized void writeByte(byte[] b, int position) throws SerialNotConnectedException{
+		if(!isConnected){
+			throw new SerialNotConnectedException();
+		}
 		try {
 			output.write(b, position, 1);
 		} catch (IOException e) {
@@ -128,6 +157,28 @@ public synchronized void serialEvent(SerialPortEvent oEvent) {
 			e.printStackTrace();
 		}
 	}
+ 
+ private Runnable getConnectionTask(){
+	 return new Runnable() {
+
+		 @Override
+		 public void run() {
+			 while(true){
+				 if(!isConnected){
+					 connect();
+				 }
+				 try {
+					 Thread.sleep(2000);
+				 } catch (InterruptedException e) {
+					 // TODO Auto-generated catch block
+					 e.printStackTrace();
+				 }
+			 }
+		 }
+	 };
+ }
+
+ 
 	
 }
 

@@ -8,6 +8,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import business.Logger;
+import exceptions.SerialNotConnectedException;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
@@ -65,11 +67,9 @@ public class HighLevelComm implements SerialPortEventListener{
 				if (line.equals("got")){
 					System.out.println("got");
 				}
-				if (line.equals("diocan")){
-					System.out.println("ping");
-				}
 			} catch (IOException e) {
 				e.printStackTrace();
+				SerialComm.getInstance().close();
 			} finally {lock.unlock();}
 			
 		}
@@ -132,7 +132,12 @@ public class HighLevelComm implements SerialPortEventListener{
 	
 	private void sendString(String s){
 		System.out.println("Sending: "+s);
-		SerialComm.getInstance().writeString(s);
+		try {
+			SerialComm.getInstance().writeString(s);
+		} catch (SerialNotConnectedException e) {
+			Logger.ExceptionRaised(e);
+			stringVector.clear();
+		}
 	}
 	
 	public void appendCommand(Command command){

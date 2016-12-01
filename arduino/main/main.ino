@@ -467,7 +467,7 @@ void printAndShiftFacebook() {
 
 void envelopeAnimation() {
   Serial.println("animaTOn");
-  switch (animationStage - 1) {
+  switch (animationStage) {
     case 0: drawColumn(3, B10101010); Serial.println("zero"); return;
     case 1: drawColumn(2, B10010110); Serial.println("one"); drawColumn(3, B10010110); drawColumn(4, B10010110); return;
     case 2: drawColumn(1, B10001010); Serial.println("two"); drawColumn(2, B10010010); drawColumn(3, B10100010); drawColumn(4, B10010010); drawColumn(5, B10001010); return;
@@ -496,7 +496,7 @@ void animateFixedSprite() {
   if (animation) {
     switch (animation_type) {
       case NEWSPAPER: scrollNewspaperAnimation(); return;
-      //case ENVELOPE: envelopeAnimation(); return; //this animation doesn't work, it seems it's a bug not related to my code
+      case ENVELOPE: envelopeAnimation(); return; //this animation doesn't work, it seems it's a bug not related to my code
     }
   }
 }
