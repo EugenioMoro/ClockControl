@@ -7,7 +7,7 @@
 //Eugenio Moro
 
 #define SCROLL_DELAY 10 //ms
-#define LED_INTENSITY 1 //1-15
+#define LED_INTENSITY 15 //1-15
 
 PROGMEM const unsigned char CH[] = {
   B00000000, B00000000, B00000000, B00000000, B00000000, // space
@@ -247,14 +247,14 @@ byte wipe[8] = {B00000000,
                 B00000000
                };
 
-byte faceLogo[8] = {B11111111,
-                    B11110111,
-                    B10000011,
-                    B11110101,
-                    B11110101,
-                    B11111111,
-                    B11111111,
-                    B00000000
+byte faceLogo[8] = {B11111110,
+                    B11110010,
+                    B11101110,
+                    B11000010,
+                    B11101110,
+                    B11101110,
+                    B11101110,
+                    B11111110
                    };
 
 
@@ -327,11 +327,11 @@ void loop() {
       totalShiftsCount = 8;
       isNewspaper = false;
     }
-    if(isFacebook){
+    if (isFacebook) {
       status2Buf();
       printAndShiftFacebook();
-      totalShiftsCount=8;
-      isFacebook=false;
+      totalShiftsCount = 8;
+      isFacebook = false;
     }
     if (isEnvelope) {
       animationStage = 0;
@@ -383,7 +383,7 @@ void loop() {
       //here print clock at the end of buffer and scroll 32 times, reset all that needs to be reset
       if (isFixedSprite) { //small detail, it makes the fixed sprite to shift out
         clearBufferByDevice(0);
-        draw8x8OnBuffer(newspaper, 0);
+        draw8x8OnBuffer(getCurrentSprite(), 0);
       }
       drawClockOnBuffer();
 
@@ -395,8 +395,9 @@ void loop() {
       isFixedSprite = false;
       totalShiftsCount = 0;
       shiftStart = 0;
+      shiftsCount = 20;
     } else shiftDrawFrom(shiftStart);
-    if (animation && (shiftsCount % animationSpeed) == (animationSpeed - 1)) { //this is to animate sprite every 10 shifts
+    if (animation && (shiftsCount % animationSpeed) == (animationSpeed - 1)) { //this is to animate sprite
       animateFixedSprite();
     }
     shiftsCount++;
@@ -414,6 +415,19 @@ void loop() {
     drawTime();
   }
   seconds = second();
+}
+
+byte* getCurrentSprite(){
+  if(isNewspaper){
+    return newspaper;
+  }
+  if(isEnvelope){
+    return envelope;
+  }
+  if(isFacebook){
+    return faceLogo;
+  }
+  return wipe;
 }
 
 void processCommand(String command) {
@@ -482,7 +496,7 @@ void animateFixedSprite() {
   if (animation) {
     switch (animation_type) {
       case NEWSPAPER: scrollNewspaperAnimation(); return;
-        //case ENVELOPE: envelopeAnimation(); return; //this animation doesn't work, it seems it's a bug not related to my code
+      //case ENVELOPE: envelopeAnimation(); return; //this animation doesn't work, it seems it's a bug not related to my code
     }
   }
 }
@@ -556,7 +570,7 @@ void shiftCompleteBuffer(int shift) {
     colBuffer[i] = colBuffer[i + shift];
   }
   for (int i = 0; i < shift; i++) {
-    colBuffer[63 - i];
+    colBuffer[63 - i]=0;
   }
   drawBuffer(0);
 }
@@ -584,7 +598,7 @@ void drawClessidra() {
                   B11111000
                  };
   for (j = 0; j < 8; j++) {
-    for (mask = 10000000; mask > 0; mask >>= 1) {
+    for (mask = B10000000; mask > 0; mask >>= 1) {
       if (draw[j] & mask) {
         lc.setLed(0, j, i, true);
       } else {
@@ -670,7 +684,7 @@ void draw8x8(byte draw[8], int device) {
   int i = 0;
   int j = 0;
   for (j = 0; j < 8; j++) {
-    for (mask = 10000000; mask > 0; mask >>= 1) {
+    for (mask = B10000000; mask > 0; mask >>= 1) {
       if (draw[j] & mask) {
         lc.setLed(device, j, i, true);
       }
@@ -757,6 +771,7 @@ byte* switchDigit(int d) {
     case 8: return eight; break;
     case 9: return nine; break;
   }
+  return wipe;
 }
 
 void clearDigits() {
@@ -874,7 +889,7 @@ void draw8x8OnBuffer(byte draw[8], int device) {
   int i = 0;
   int j = 0;
   for (j = 0; j < 8; j++) {
-    for (mask = 10000000; mask > 0; mask >>= 1) {
+    for (mask = B10000000; mask > 0; mask >>= 1) {
       if (draw[j] & mask) {
         bitWrite(colBuffer[device * 8 + i], j, 1);
       } else {
@@ -957,7 +972,7 @@ void setLedOnBuffer(int device, int row, int column, boolean foo) {
   if (!foo) {
     b = 0;
   }
-  bitWrite(colBuffer[8 * device + 32 + column], 7, b);
+  bitWrite(colBuffer[8 * device + 32 + column], row, b);
 }
 
 void drawDaysOnBuffer() {
