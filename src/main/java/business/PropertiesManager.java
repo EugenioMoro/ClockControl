@@ -1,12 +1,10 @@
-package properties;
+package business;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-
-import business.Logger;
 
 public class PropertiesManager {
 	
@@ -36,14 +34,14 @@ public class PropertiesManager {
 		try { //open
 			in = new FileInputStream(FILE_NAME);
 		} catch (FileNotFoundException e) {
-			Logger.ExceptionRaised(e);
+			e.printStackTrace();
 			return;
 		}
 		try { //load
 			properties.load(in);
 			in.close();
 		} catch (IOException e) {
-			Logger.ExceptionRaised(e);
+			e.printStackTrace();
 			return;
 		}
 		

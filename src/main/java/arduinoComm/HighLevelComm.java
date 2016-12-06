@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import business.Logger;
+import business.Session;
 import exceptions.SerialNotConnectedException;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
@@ -64,12 +64,9 @@ public class HighLevelComm implements SerialPortEventListener{
 					canTransfer=true;
 					write.signalAll();
 				}
-				if (line.equals("got")){
-					System.out.println("got");
-				}
 			} catch (IOException e) {
-				e.printStackTrace();
-				SerialComm.getInstance().close();
+				//e.printStackTrace();
+				Session.currentSession().onClessidraDisconnected();
 			} finally {lock.unlock();}
 			
 		}
@@ -135,7 +132,6 @@ public class HighLevelComm implements SerialPortEventListener{
 		try {
 			SerialComm.getInstance().writeString(s);
 		} catch (SerialNotConnectedException e) {
-			Logger.ExceptionRaised(e);
 			stringVector.clear();
 		}
 	}

@@ -1,5 +1,8 @@
 package business;
 
+import java.util.List;
+
+import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient.AccessToken;
 import com.restfb.Version;
@@ -7,11 +10,16 @@ import com.restfb.exception.devicetoken.FacebookDeviceTokenCodeExpiredException;
 import com.restfb.exception.devicetoken.FacebookDeviceTokenDeclinedException;
 import com.restfb.exception.devicetoken.FacebookDeviceTokenPendingException;
 import com.restfb.exception.devicetoken.FacebookDeviceTokenSlowdownException;
+import com.restfb.scope.ExtendedPermissions;
+import com.restfb.scope.FacebookPermissions;
 import com.restfb.scope.ScopeBuilder;
 import com.restfb.scope.UserDataPermissions;
 import com.restfb.types.DeviceCode;
+import com.restfb.types.Notification;
+import com.restfb.types.Post;
+import com.restfb.types.User;
 
-import properties.PropertiesManager;
+import exceptions.FacebookNotConfiguredException;
 
 public class FacebookManager {
 	
@@ -26,9 +34,11 @@ public class FacebookManager {
 	private DeviceCode deviceCode;
 	
 
+	@SuppressWarnings("deprecation")
 	private FacebookManager() {
 		scope = new ScopeBuilder();
-		scope.addPermission(UserDataPermissions.USER_ABOUT_ME);
+		//scope.addPermission(UserDataPermissions.USER_ABOUT_ME);
+		scope.addPermission(ExtendedPermissions.MANAGE_NOTIFICATIONS);
 		loadProperties();
 	}
 	
@@ -40,8 +50,8 @@ public class FacebookManager {
 	}
 	
 	
-	public void obtainDeviceAccessToken(){
-		client = new DefaultFacebookClient(Version.VERSION_2_3);
+	public void startDeviceTokenTransaction(){
+		client = new DefaultFacebookClient(Version.VERSION_2_2);
 		deviceCode = client.fetchDeviceCode("1842984585947331", scope);
 		pollForToken=true;
 	}
@@ -87,10 +97,6 @@ public class FacebookManager {
 		accessTokenCode=PropertiesManager.getInstance().getFacebookAccessToken();
 	}
 	
-	private void connect(){
-		
-	}
-
 	public String getVerificationUri() {
 		return deviceCode.getVerificationUri();
 	}
@@ -98,5 +104,36 @@ public class FacebookManager {
 	public String getUserCode() {
 		return deviceCode.getUserCode();
 	}
+	
+	public void connect() throws FacebookNotConfiguredException{
+		if(accessTokenCode==null){
+			throw new FacebookNotConfiguredException();
+		}
+		client = new DefaultFacebookClient(accessTokenCode, Version.VERSION_2_2);
+		System.out.println("Facebook connected");
+	}
+	
+
+	public String getAboutMe(){
+		return client.fetchObject("me", User.class).getName();
+	}
+	
+	public String getLogOutUrl(){
+		return client.getLogoutUrl(null);
+	}
+	
+	public static void main(String[] args) throws Exception{ //test purpose
+		FacebookManager.getInstance().connect();
+		
+		Connection<Notification> myNots = FacebookManager.getInstance().getClient().fetchConnection("me/notifications", Notification.class);
+		
+		System.out.println(myNots.getData().size());
+		System.out.println(myNots.getData().get(0).getTitle());
+	}
+	
+	public DefaultFacebookClient getClient(){
+		return client;
+	}
+	
 	
 }

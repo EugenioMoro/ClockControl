@@ -5,12 +5,13 @@ import java.util.ArrayList;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
+import business.PropertiesManager;
+import business.Session;
 import model.BotUser;
-import properties.PropertiesManager;
 
 public class UpdateHandler extends TelegramLongPollingBot {
 	
-	private static ArrayList<BotUser> users = new ArrayList<BotUser>();
+	
 	private static UpdateHandler instance;
 	
 	public static UpdateHandler getInstance(){
@@ -28,6 +29,7 @@ public class UpdateHandler extends TelegramLongPollingBot {
 
 	@Override
 	public void onUpdateReceived(Update update) {
+		ArrayList<BotUser> users = Session.currentSession().getUsers();
 		if (update.hasMessage() && update.getMessage().hasText()){
 			int i=0;
 			BotUser user=null;
@@ -36,6 +38,8 @@ public class UpdateHandler extends TelegramLongPollingBot {
 				user = new BotUser();
 				user.setId(update.getMessage().getChatId());
 				users.add(user);
+				MessageSender.welcomeMessage(user);
+				return;
 			} else {
 				for(i=0; i<users.size(); i++){
 					if(users.get(i).getId()==update.getMessage().getChatId()){
@@ -83,6 +87,7 @@ public class UpdateHandler extends TelegramLongPollingBot {
 	}
 	
 	public static BotUser getUserById(long id){
+		ArrayList<BotUser> users = Session.currentSession().getUsers();
 		for(int i=0; i<users.size(); i--){
 			if(users.get(i).getId()==id)
 				return users.get(i);
@@ -93,5 +98,6 @@ public class UpdateHandler extends TelegramLongPollingBot {
 	public static BotUser getUserByUpdate(Update update){
 		return getUserById(update.getMessage().getChatId());
 	}
+	
 
 }

@@ -1,29 +1,18 @@
 package arduinoComm;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Enumeration;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
-import com.sun.corba.se.impl.orbutil.closure.Future;
-
-import business.Logger;
+import business.Session;
 import exceptions.SerialNotConnectedException;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 
-public class SerialComm implements SerialPortEventListener{
+public class SerialComm{
 
 private static SerialComm instance;
 	
-private BufferedReader input;
 private OutputStream output;
 
 private SerialPort serialPort;
@@ -42,7 +31,7 @@ public static SerialComm getInstance(){
 	return instance;
 }
 
-public void initialize() {
+private void initialize() {
 	connectionWorker=new Thread(getConnectionTask());
 	connectionWorker.start();
 }
@@ -62,7 +51,6 @@ private void connect(){
 			}
 	}
 	if (portId == null) {
-		Logger.notifyClessidraNotFound();
 		return;
 	}
 
@@ -78,7 +66,6 @@ private void connect(){
 				SerialPort.PARITY_NONE);
 
 		// binds the streams
-		input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 		output = serialPort.getOutputStream();
 
 		// add event listeners
@@ -86,6 +73,7 @@ private void connect(){
 		serialPort.addEventListener(HighLevelComm.getInstance());
 		serialPort.notifyOnDataAvailable(true);
 		isConnected=true;
+		Session.currentSession().onClessidraConnected();
 	} catch (Exception e) {
 		System.err.println(e.toString());
 	}
@@ -97,7 +85,6 @@ private void connect(){
  * This will prevent port locking on platforms like Linux.
  */
 public synchronized void close() {
-	System.out.println("closing connection");
 	if (serialPort != null) {
 		serialPort.removeEventListener();
 		serialPort.close();
@@ -108,17 +95,6 @@ public synchronized void close() {
 /**
  * Handle an event on the serial port. Read the data and print it.
  */
-public synchronized void serialEvent(SerialPortEvent oEvent) {
-	if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-		try {
-			String inputLine=input.readLine();
-			System.out.println(inputLine);
-		} catch (Exception e) {
-			System.err.println(e.toString());
-		}
-	}
-	// Ignore all the other eventTypes, but you should consider the other ones.
-}
 
 
 
@@ -177,6 +153,14 @@ public synchronized void serialEvent(SerialPortEvent oEvent) {
 		 }
 	 };
  }
+
+public Boolean getIsConnected() {
+	return isConnected;
+}
+
+public void startSearchForClessidra(){
+	this.connectionWorker.start();
+}
 
  
 	

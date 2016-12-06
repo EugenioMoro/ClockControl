@@ -26,7 +26,7 @@ public class ScheduledTaskPrototype {
 		this.initialDelay=minutes;
 	}
 
-	public void removeTask() {
+	public void stopScheduling() {
 		future.cancel(false);
 		isRunning=false;
 	}

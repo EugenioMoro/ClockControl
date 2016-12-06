@@ -4,6 +4,7 @@ import org.telegram.telegrambots.api.objects.Update;
 
 import arduinoComm.Commands;
 import arduinoComm.HighLevelComm;
+import arduinoComm.SerialComm;
 import botContext.BrightnessContext;
 import botContext.FacebookContext;
 import business.NewsManager;
@@ -48,38 +49,30 @@ public class BotCommandProcesser {
 	}
 	
 	private static void setBrightness(Update update){
-		if(HighLevelComm.getInstance().isBusy()){
-			clockBusyMessageSend(update);
+		if(!canAppend(update))
 			return;
-		}
 		System.out.println("Brightness command");
 		UpdateHandler.getUserByUpdate(update).setCurrentContext(new BrightnessContext(UpdateHandler.getUserByUpdate(update)));
 		UpdateHandler.getUserByUpdate(update).setCanReply(false);
 	}
 	
 	private static void setTime(Update update){
-		if(HighLevelComm.getInstance().isBusy()){
-			clockBusyMessageSend(update);
+		if(!canAppend(update))
 			return;
-		}
 		HighLevelComm.getInstance().appendCommand(Commands.time());
 		MessageSender.simpleSend("Time set", update);
 	}
 	
 	private static void sendNews(Update update){
-		if(HighLevelComm.getInstance().isBusy()){
-			clockBusyMessageSend(update);
+		if(!canAppend(update))
 			return;
-		}
 		NewsManager.getInstance().printNews();
 		MessageSender.simpleSend("Sending news", update);
 	}
 	
 	public static void printString(Update update){
-		if(HighLevelComm.getInstance().isBusy()){
-			clockBusyMessageSend(update);
+		if(!canAppend(update))
 			return;
-		}
 		HighLevelComm.getInstance().appendString(update.getMessage().getText());
 	}
 	
@@ -88,12 +81,20 @@ public class BotCommandProcesser {
 	}
 	
 	private static void facebook(Update update){
-		if(HighLevelComm.getInstance().isBusy()){
-			clockBusyMessageSend(update);
-			return;
-		}
 		UpdateHandler.getUserByUpdate(update).setCurrentContext(new FacebookContext(UpdateHandler.getUserByUpdate(update)));
 		UpdateHandler.getUserByUpdate(update).setCanReply(false);
+	}
+	
+	private static Boolean canAppend(Update update){
+		if(!SerialComm.getInstance().getIsConnected()){
+			MessageSender.clessidraNotConnectedMessage(update);
+			return false;
+		}
+		if(HighLevelComm.getInstance().isBusy()){
+			clockBusyMessageSend(update);
+			return false;
+		}
+		return true;
 	}
 	
 }

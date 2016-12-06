@@ -13,7 +13,6 @@ import org.openweathermap.api.query.currentweather.CurrentWeatherOneLocationQuer
 
 import arduinoComm.HighLevelComm;
 import model.Weather;
-import properties.PropertiesManager;
 
 public class WeatherManager extends ScheduledTaskPrototype{
 	

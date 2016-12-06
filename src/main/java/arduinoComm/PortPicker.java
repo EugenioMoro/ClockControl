@@ -44,7 +44,7 @@ public class PortPicker implements SerialPortEventListener{
 }
 	
 	public Boolean isValid(CommPortIdentifier id){
-		System.out.println("Opening port:");
+		System.out.println("Opening port: " + id.getName());
 		if(id.getPortType()==CommPortIdentifier.PORT_SERIAL){
 			
 			try{ //open connection
@@ -74,7 +74,6 @@ public class PortPicker implements SerialPortEventListener{
 	}
 	
 	private void openPortByIdentifier(CommPortIdentifier id) throws Exception{
-		System.out.println("Trying new connection...");
 		serialPort = (SerialPort) id.open(this.getClass().getName(), TIME_OUT);
 		serialPort.setSerialPortParams(DATA_RATE,
 				SerialPort.DATABITS_8,
@@ -85,7 +84,6 @@ public class PortPicker implements SerialPortEventListener{
 		Thread.sleep(2000);
 		serialPort.addEventListener(this);
 		serialPort.notifyOnDataAvailable(true);
-		System.out.println("Opened connction to new port: " + serialPort.getName());
 	}
 	
 	
